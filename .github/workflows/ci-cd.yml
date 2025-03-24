@@ -149,6 +149,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Auto-merge PR
         run: |
           echo "🔄 Auto-merging PR to develop"
