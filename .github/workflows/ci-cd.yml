@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [20, 24]
+        node: [18, lts]
       # Si un job de la matrice échoue, on continue l'exécution des autres jobs
       # Cela permet d'avoir les résultats des tests sur toutes les versions de Node
       # même si une version échoue
