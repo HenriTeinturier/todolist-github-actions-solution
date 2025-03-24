@@ -7,9 +7,6 @@ on:
     types: [submitted]
   push:
     branches: [main]
-  pull_request_target:
-    branches: main
-    types: closed
 
 jobs:
   unit-tests-and-coverage:
