@@ -1,0 +1,192 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [develop, main]
+  pull_request_target:
+    branches: main
+    types: closed
+
+jobs:
+  unit-tests-and-coverage:
+    name: Test on Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 24]
+      # Si un job de la matrice échoue, on continue l'exécution des autres jobs
+      # Cela permet d'avoir les résultats des tests sur toutes les versions de Node
+      # même si une version échoue
+      fail-fast: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      # comme dans le cours on récupère l'emplacement du cache npm
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+
+      # puis on cache cet emplacement
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        # ajout d'un id pour l'identifier et récupérer le résultat du job
+        # afin d'afficher un résumé des tests dans le job summary
+        id: run-tests
+        run: npm run test:ci
+
+      # bonus pas encore vu en cours
+      # générer un rapport de couverture de code dans coverage/
+      - name: Generate coverage report
+        run: npm run test:coverage
+
+      # bonus suite puis envoyer le rapport de couverture de code dans GitHub
+      # artifact est un fichier généré par un job et stocké dans GitHub
+      # on le verra dans une prochaine leçon
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-node-${{ matrix.node }}
+          path: coverage/
+          retention-days: 7
+
+      # Ajoute un résumé des tests dans le job summary
+      - name: Add test summary
+        if: always()
+        run: |
+          if [ "${{ steps.run-tests.outcome }}" == "success" ]; then
+            echo "## Test Results - Node ${{ matrix.node }}" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Tests completed successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Test Results - Node ${{ matrix.node }}" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Tests failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "📊 Coverage report available in artifacts" >> $GITHUB_STEP_SUMMARY
+
+  lint:
+    name: Lint code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: "npm" # On utilise le cache intégré ici
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Add lint summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "## Lint Results" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Code style checks passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Lint Results" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Code style checks failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  build:
+    name: Build application
+    needs: [unit-tests-and-coverage, lint]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fake build
+        run: |
+          echo "🚀 Building application in progress..."
+          sleep 2
+          echo "✅ Build success!"
+
+  deploy-dev:
+    name: Deploy to development
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: develop
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: true
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'feature/')
+
+    steps:
+      - name: Fake deployment
+        run: |
+          echo "🚀 Deploying to ${{ vars.DEPLOY_URL }}"
+          echo "Using deploy token: ${{ secrets.DEPLOY_TOKEN }}"
+          echo "✅ Deployed successfully!"
+
+  auto-merge-and-create-release-pr:
+    name: Manage Pull Requests
+    needs: [deploy-dev]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'feature/')
+    permissions:
+      pull-requests: write
+      contents: write
+
+    steps:
+      - name: Auto-merge PR
+        run: |
+          echo "🔄 Auto-merging PR to develop"
+          gh pr merge --auto --merge "${{ github.event.pull_request.number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create PR to main
+        run: |
+          echo "📝 Creating PR to main"
+          gh pr create --base main --head develop --title "Release to production" --body "Automated PR from develop to main"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-prod:
+    name: Deploy to production
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: true
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
+
+    steps:
+      - name: Fake production deployment
+        run: |
+          echo "🚀 Deploying to production at ${{ vars.DEPLOY_URL }}"
+          echo "Using production token: ${{ secrets.DEPLOY_TOKEN }}"
+          echo "✅ Production deployment successful!"
+
+      - name: Add deployment summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "## Production Deployment" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Successfully deployed to production" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Production Deployment" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Production deployment failed" >> $GITHUB_STEP_SUMMARY
+          fi
