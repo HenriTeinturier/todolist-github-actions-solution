@@ -179,6 +179,11 @@ jobs:
     if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
 
     steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
       - name: Fake production deployment
         run: |
           echo "🚀 Deploying to production at ${{ vars.DEPLOY_URL }}"
