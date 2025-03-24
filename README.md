@@ -1,74 +1,76 @@
-# TodoList GitHub Actions Starter
+# CI/CD Pipeline TodoList App
 
-Un kit de démarrage d'application Todo List React conçu pour apprendre les workflows CI/CD avec GitHub Actions.
+## Workflow Overview
 
-## Fonctionnalités
+This CI/CD pipeline automates the testing, building, and deployment process of the TodoList application.
 
-- Ajouter de nouvelles tâches
-- Marquer les tâches comme complétées
-- Modifier les tâches existantes
-- Supprimer les tâches
+### Pipeline Steps
 
-## Stack Technique
+1. **Tests and Coverage** (`Test on Node 18` and `Test on Node lts/*`)
 
-- React 19
-- TypeScript
-- Vite
-- Vitest
-- React Testing Library
-- CSS3
+   - Runs unit tests
+   - Generates coverage reports
+   - Uploads coverage artifacts
 
-## Tests
+2. **Lint** (`Lint code`)
 
-Exécuter les tests en mode watch :
+   - Checks code style and quality
 
-```bash
-npm test
-# ou
-yarn test
-```
+3. **Build** (`Build application`)
 
-Exécuter les tests pour le CI (exécution unique) :
+   - Builds the application
+   - Depends on successful tests and lint
 
-```bash
-npm run test:ci
-# ou
-yarn run test:ci
-```
+4. **Development Deployment** (`Deploy to development`)
 
-Générer un rapport de couverture de tests :
+   - Deploys to development environment
+   - Triggers on feature/\* branches PRs to develop
+   - Auto-merges PR if successful
 
-```bash
-npm run test:coverage
-# ou
-yarn test:coverage
-```
+5. **Production Deployment** (`Deploy to production`)
+   - Deploys to production environment
+   - Triggers when PRs are merged into main
 
-## Structure du Projet
+### Branch Protection Rules
 
-```
-src/
-  ├── components/
-  │   ├── TodoList.tsx
-  │   ├── TodoItem.tsx
-  │   ├── TodoItemEdit.tsx
-  │   └── __tests__/
-  │       └── TodoList.test.tsx
-  ├── App.tsx
-  ├── App.css
-  └── main.tsx
-```
+- `develop` branch requires:
 
-## Objectifs d'Apprentissage
+  - Passing status checks
+  - Pull request review
+  - Up-to-date branch
 
-Ce repository de démarrage est conçu pour vous aider à apprendre :
+- `main` branch requires:
+  - Passing status checks
+  - Pull request review
+  - Up-to-date branch
+  - Environment deployment
 
-- L'implémentation de GitHub Actions
-- La mise en place de pipelines CI/CD
-- Les stratégies de protection des branches
-- La configuration des environnements
-- Les tests automatisés en CI
+### How to Re-run Checks
 
-## Prochaines Étapes
+1. Go to the Pull Request page
+2. Click on "Conversation" tab
+3. Find the "Checks" section (usually at the bottom of the PR description)
+4. Click on the "Details" link next to any check
+5. In the top right corner, click on the three dots (⋮)
+6. Select "Re-run all jobs"
 
-Consultez le repository solution [todolist-github-actions-solution](https://github.com/HenriTeinturier/todolist-github-actions-solution) pour voir l'implémentation complète avec les workflows GitHub Actions.
+Alternatively, you can:
+
+1. Go to the "Actions" tab in your repository
+2. Find the workflow run you want to re-run
+3. Click the "Re-run all jobs" button
+
+### Environment Configuration
+
+- **Development Environment**
+
+  - Target branches: `develop`, `feature/**`
+  - Required variables:
+    - `DEPLOY_URL`: Development deployment URL
+    - `DEPLOY_TOKEN`: Development deployment token
+
+- **Production Environment**
+  - Target branch: `main`
+  - Required variables:
+    - `DEPLOY_URL`: Production deployment URL
+    - `DEPLOY_TOKEN`: Production deployment token
