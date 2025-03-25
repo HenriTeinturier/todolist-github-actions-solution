@@ -156,7 +156,9 @@ jobs:
     needs: [deploy-dev]
     runs-on: ubuntu-latest
     permissions:
+      # On veut que le workflow puisse merger les PR
       pull-requests: write
+      # On veut que le workflow puisse créer des PR
       contents: write
 
     steps:
@@ -176,6 +178,17 @@ jobs:
           gh pr create --base main --head develop --title "Release to production" --body "Automated PR from develop to main"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "## Merge Operations" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Successfully managed pull requests" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Merge Operations" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Failed to manage pull requests" >> $GITHUB_STEP_SUMMARY
+          fi
 
   deploy-prod:
     name: Deploy to production
