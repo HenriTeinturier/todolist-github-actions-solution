@@ -35,7 +35,8 @@ jobs:
         shell: bash
         run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
 
-      # puis on cache cet emplacement
+      # puis on met en cache cet emplacement
+      # souvent c'est ~/.npm
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
@@ -53,25 +54,33 @@ jobs:
         id: run-tests
         run: npm run test:ci
 
-      # bonus pas encore vu en cours
+      # bonus
       # générer un rapport de couverture de code dans coverage/
       - name: Generate coverage report
         run: npm run test:coverage
 
-      # bonus suite puis envoyer le rapport de couverture de code dans GitHub
-      # artifact est un fichier généré par un job et stocké dans GitHub
+      # bonus artefact pas encore vu en cours
+      # Eenvoyer le rapport de couverture de code dans GitHub
+      # artefact est un fichier généré par un job et stocké dans GitHub
       # on le verra dans une prochaine leçon
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-node-${{ matrix.node }}
+          # C'est le dossier qui contient le rapport de couverture de code
+          # que l'on veut mettre dans l'artefact
           path: coverage/
           retention-days: 7
 
       # Ajoute un résumé des tests dans le job summary
       - name: Add test summary
+        # associé à fail-fast, on veut que le job soit toujours exécuté
+        # même si les tests échouent
         if: always()
         run: |
+          # Rappel: dans outcome, on a le résultat du job
+          # success, failure, cancelled, skipped
+          # run-tests est l'id du job qui exécute les tests
           if [ "${{ steps.run-tests.outcome }}" == "success" ]; then
             echo "## Test Results - Node ${{ matrix.node }}" >> $GITHUB_STEP_SUMMARY
             echo "✅ Tests completed successfully" >> $GITHUB_STEP_SUMMARY
@@ -146,7 +155,6 @@ jobs:
     name: Manage Pull Requests
     needs: [deploy-dev]
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'feature/')
     permissions:
       pull-requests: write
       contents: write
