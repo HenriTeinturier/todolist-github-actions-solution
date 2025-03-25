@@ -155,8 +155,7 @@ jobs:
     name: Manage Pull Requests
     needs: [deploy-dev]
     runs-on: ubuntu-latest
-    # on veut que l'environnement develop soit en echec si une des steps de ce job echoue
-    environment: develop
+
     permissions:
       # On veut que le workflow puisse merger les PR
       pull-requests: write
