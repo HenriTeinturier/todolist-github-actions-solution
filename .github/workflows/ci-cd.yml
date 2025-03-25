@@ -169,10 +169,7 @@ jobs:
       - name: Auto-merge PR
         run: |
           echo "🔄 Auto-merging PR to develop"
-          # On veut que le PR soit mergé automatiquement
-          # gh pr merge : Commande de base pour merger une PR
-          # --auto : Active le merge automatique dès que toutes les conditions requises sont remplies (checks, reviews, etc.)
-          # "${{ github.event.pull_request.number }}" : Le numéro de la PR actuelle (récupéré du contexte de l'événement)
+
           gh pr merge --auto --merge "${{ github.event.pull_request.number }}"
         env:
           # La commande gh nécessite le GITHUB_TOKEN pour effectuer les actions
@@ -184,11 +181,7 @@ jobs:
       - name: Create PR to main
         run: |
           echo "📝 Creating PR to main"
-          # gh pr create : Commande de base pour créer une PR
-          # --base main : La branche de destination (main)
-          # --head develop : La branche source (develop)
-          # --title "Release to production" : Le titre de la PR
-          # --body "Automated PR from develop to main" : Le message de la PR (obligatoire)
+
           gh pr create --base main --head develop --title "Release to production" --body "Automated PR from develop to main"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
