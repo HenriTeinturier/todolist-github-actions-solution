@@ -1,127 +1,123 @@
-# Exercice : Mise en place d'un workflow CI/CD avec GitHub Actions
+# 🚀 Exercice : Mise en place d'un workflow CI/CD avec GitHub Actions
 
-## Objectif
+## 🎯 Objectif
 
-A partir d'une mini application, vous devez créer une chaîne d'intégration et de déploiement continu (CI/CD) en utilisant GitHub Actions avec des environnements de développement et de production.
+À partir d'une mini-application, vous devez créer une chaîne d'intégration et de déploiement continu (CI/CD) en utilisant GitHub Actions avec des environnements de développement et de production.
 
-## Développement application
+## 💻 Développement de l'application
 
-- Créer un repository GitHub.
-- Créer une mini application simple avec des tests et un linter (par exemple une todolist ou même une application encore plus simple) avec React/vite.
-- Testez en local que les scripts de test et le linter passent.
-- PS: les tests doivent se terminer à la fin de leur execution.
+### Prérequis
 
-la branche main est notre branche principale.  
-la branche develop est notre branche de développement.  
-Pour développer votre application, vous devez créer des branches feature depuis develop et les merger dans develop.  
-Puis quand develop est stable, vous pouvez le merger dans main.
+- Créer un repository GitHub
+- Créer une mini-application simple avec des tests et un linter (par exemple une todolist) avec React/Vite
+- Tester en local que les scripts de test et le linter passent
+- ⚠️ Les tests doivent se terminer à la fin de leur exécution
 
-## workflow CI/CD explication
+### Gestion des branches
 
-Notre objectif est de mettre en place un workflow CI/CD complet pour notre application.
+- `main` : branche principale
+- `develop` : branche de développement
+- Les branches `feature/*` doivent être créées depuis `develop`
+- Une fois `develop` stable, elle peut être mergée dans `main`
 
-### Workflow de developpement
+## 🔄 Flow CI/CD
 
-Lorsque nous effectuons une pull request de notre branche feature vers dévelop alors tout une série d'événements doit se produire:
+### Flow de développement
 
-- les tests sont lancés
-- Puis un build (fictif) est lancé.
-- Enfin un déploiement (fictif) sur l'environnement de développement est lancé
+Lors d'une pull request d'une branche feature vers develop, la séquence suivante se déclenche :
 
-Si ces étapes sont un succès on veut que automatiquement:
+1. Exécution des tests
+2. Build (fictif)
+3. Déploiement (fictif) sur l'environnement de développement
 
-- merger (valider) notre pull request.
-- créer une pull request de develop vers main.
+En cas de succès, le workflow :
 
-### Workflow de production
+- Merge automatiquement la pull request
+- Crée une pull request de develop vers main
 
-On doit reviewer puis valider la pull request de develop vers main manuellement ce qui doit ensuite entraîner:
+### Flow de production
 
-- un déploiement (fictif) sur l'environnement de production
+Après review et validation manuelle de la pull request develop → main :
 
-## workflow mise en place
+- Déploiement (fictif) sur l'environnement de production
 
-### Création des environnements
+## ⚙️ Configuration
 
-Nous avons deux environnements à créer dans GitHub:
+### Environnements GitHub
 
-- `develop` pour le développement
-- `production` pour la production
+Créer deux environnements dans GitHub :
 
-Ces environnements doivent contenir les variables et secrets nécessaires pour le deploiement.  
-Ces variables sont des données fictives donc vous pouvez mettre ce que vous voulez dedans.  
-Une variable `DEPLOY_URL`: <https://dev.todoapp.exemple.com> pour develop par exemple.  
-Un secret `DEPLOY_TOKEN`: Une valeur factice pour l'exercice.
+| Environnement | Variables                                     | Secrets        |
+| ------------- | --------------------------------------------- | -------------- |
+| `develop`     | `DEPLOY_URL: https://dev.todoapp.exemple.com` | `DEPLOY_TOKEN` |
+| `production`  | `DEPLOY_URL: https://todoapp.exemple.com`     | `DEPLOY_TOKEN` |
 
 ### Protection des branches
 
-Nous devons protéger les branches main et develop.
+Configuration requise pour `main` et `develop` :
 
-- main et develop n'acceptent que les pr et pas les push directement.
-- La validation de ces pr necessitera que les tests passent. (à activer plus tard quand le workflow sera en place)
-- une pr sur main necessite au moins 1 reviewer.
+- ✅ Pull requests uniquement (pas de push direct)
+- ✅ Tests obligatoires (à activer après mise en place du workflow)
+- ✅ Pour `main` : minimum 1 reviewer
 
-## Workflow Github Actions
+## 📝 Workflow GitHub Actions
 
-A partir de maintenant vous devez respecter les protections des branches et environnements.
-Vous devez donc créer une branch feature depuis develop pour créer notre fichier de workflow.
+Créer le fichier `.github/workflows/ci-cd.yml` depuis une branche feature.
 
-Créer un fichier `.github/workflows/ci-cd.yml`.
-
-### Event
+### Événements déclencheurs
 
 Nous devons écouter les événements suivants:
 
-- les pr sur develop et main.
-- le merge manuel d'une pr sur main. (c'est un push)
-- les pull request reviews de type submitted afin de lancer les tests quand une review est acceptée.
+- Pull requests sur develop et main
+- Merge manuel d'une PR sur main (push)
+- Reviews de pull requests (type: submitted) pour lancer les tests
 
-### Jobs
+### Jobs à implémenter
 
-Implémenter les jobs suivants :
-
-- `unit-tests` : exécute les tests unitaires
-- `lint` : vérifie le code avec ESLint
-- `build` : simule un build de l'application
-- `deploy-dev` : simule un déploiement en développement (uniquement pour les PRs depuis les branches feature)
-- `auto-merge-and-create-release-pr` : gère les PRs automatiquement (uniquement pour les PRs depuis les branches feature)
-- `deploy-prod` : simule un déploiement en production (uniquement après merge sur main)
+| Job                                | Description                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------------------------- |
+| `unit-tests`                       | Tests unitaires                                                                              |
+| `lint`                             | Vérification ESLint                                                                          |
+| `build`                            | Simule un build de l'application                                                             |
+| `deploy-dev`                       | Simule un déploiement en développement (uniquement pour les PRs depuis les branches feature) |
+| `auto-merge-and-create-release-pr` | Gestion automatique des PRs                                                                  |
+| `deploy-prod`                      | Simule un déploiement en production (uniquement après merge sur main)                        |
 
 ### Détails des jobs
 
-#### unit-tests et lint
+#### Tests et Lint (parallèles)
 
-Ces deux jobs doivent s'effectuer en parallèle
+Ces deux jobs doivent s'effectuer en parallèle.
 
 ##### `unit-tests`
 
-- exécute les tests unitaires
+- Exécution des tests unitaires
 - Doit utiliser une matrice pour executer des tests sur plusieurs version de node (18 et 22 par exemple).
-- Doit u utiliser du cache pour les dépendances.
+- Doit utiliser du cache pour les dépendances.
 - Doit générer un résumé des tests dans le job summary (GITHUB_STEP_SUMMARY)
 
 ##### `lint`
 
 - vérifie le code avec ESLint
-- Doit également générer un résumé dans le job summary (GITHUB_STEP_SUMMARY)
+- Doit générer un résumé dans le job summary (GITHUB_STEP_SUMMARY)
 
-#### build
+#### Build
 
 Doit se lancer si les tests sont valides
 
 - simule un build de l'application
 - C'est un fake build donc vous pouvez juste faire des echo
 
-#### deploy-dev
+#### Deploy Dev
 
 Simule un déploiement en développement (uniquement pour les PRs depuis les branches feature)
 
 - Doit avoir des regles de concurrence.
 - Doit se déclencher si la PR est depuis une branche feature et si le build est validé
-- On doit récupérer les variables d'environnement DEPLOY_URL et DEPLOY_TOKEN depuis l'environnement develop et les utiliser de façon fictive
+- On doit récupérer les variables DEPLOY_URL et DEPLOY_TOKEN depuis l'environnement develop et les utiliser de façon fictive
 - on fait donc des echos dans le job car c'est un deploiement fictif
 
-#### auto-merge-and-create-release-pr
+#### Auto-merge et Release PR
 
 De façon automatique merge les pull requests vers develop (si validé) et crée une PR de develop vers main
 
@@ -142,38 +138,39 @@ Pour le job `auto-merge-and-create-release-pr`, vous devrez :
 
 1. Ajouter les permissions nécessaires :
 
-   ```yaml
-   permissions:
-     # On veut que le workflow puisse merger les PR
-     pull-requests: write
-     # On veut que le workflow puisse créer des PR
-     contents: write
-   ```
+```yaml
+permissions:
+  # On veut que le workflow puisse merger les PR
+  pull-requests: write
+  # On veut que le workflow puisse créer des PR
+  contents: write
+```
 
-2. Utiliser ces commandes :
+2. Utiliser ces commandes
 
-   ```yaml
-   # Merge la PR si elle est validée
-   - run: gh pr merge --auto --merge "${{ github.event.pull_request.number }}"
-   # Crée une PR de develop vers main
-   - run: gh pr create --base main --head develop --title "Release to production" --body "Automated PR from develop to main"
-   ```
+```yaml
+# Merge la PR si elle est validée
+- run: gh pr merge --auto --merge "${{ github.event.pull_request.number }}"
+# Crée une PR de develop vers main
+- run: gh pr create --base main --head develop --title "Release to production" --body "Automated PR from develop to main"
+```
 
-3. exemple complet:
+3. exemple complet
 
-   ```yaml
-   run: gh pr merge --auto --merge "${{ github.event.pull_request.number }}"
-   # nécéssite d'utiliser le token github et le mettre dans la variable d'environnement GH_TOKEN
-   env:
-     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-   ```
+```yaml
+run: gh pr merge --auto --merge "${{ github.event.pull_request.number }}"
+# nécéssite d'utiliser le token github et le mettre dans la variable d'environnement GH_TOKEN
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
 
-Pour pouvoir créer une PR dans le workflow, il faut que dans les settings du repository, dans les actions, il soit coché "allow GITHUB to create and approve pull request"
+Pour pouvoir créer une PR dans le workflow, il faut que soit coché dans les settings du repository  
+✅ "allow GITHUB to create and approve pull request"  
 settings > actions > general > allow GITHUB to create and approve pull request
 
-![Allow Github Action to create and approve pull requests](./assets/Allow_action_pr.png)
+![Allow Github Action to create and approve pull requests](/assets/Allow_action_%20pr.png)
 
-#### deploy-prod
+#### Deploy Prod
 
 Simule un déploiement en production (uniquement après merge sur main)
 
@@ -182,46 +179,40 @@ Simule un déploiement en production (uniquement après merge sur main)
 - C'est un fake donc juste des echo avec les variables et secrets de l'environnement production à afficher
 - on peut ajouter des informations dans le job summary (GITHUB_STEP_SUMMARY)
 
-## A savoir / Aide
+## 🔍 A savoir / Aide
 
 on peut utiliser des contextes github pour récupérer des informations sur l'événement qui a déclenché le workflow.
 
-le nom de l'événement: `github.event_name`  
-github.event_name == push | pull_request
+```yaml
+github.event_name  # push | pull_request (nom de l'événement)
+github.ref        # refs/heads/main | refs/heads/develop (nom de la branche)
+github.event.pull_request.number # (numéro de la PR)
+```
 
-le nom de la branche: `github.ref`  
-github.ref == refs/heads/main | refs/heads/develop
+## 🧪 Test du workflow
 
-Le numéro de la PR: `github.event.pull_request.number`  
-github.event.pull_request.number
+1. Créer une branche feature/test
+2. Créer une PR vers develop
+3. Le workflow doit se déclencher automatiquement:
+   - les tests sont lancés
+   - s'ils réussissent le fake build est lancé
+   - s'il réussit le deploiement fictif sur develop est lancé
+   - enfin la pr est mergé automatiquement sur develop
+   - et une nouvelle pr est crée de develop vers main
+4. Review + Valider/merge la PR develop → main
+5. Observer le deploy prod
+   - le workflow de production doit se déclencher
 
-## test de l'exercice
+## 📊 Résultats attendus
 
-Création d'une feature:
+### Exemple de Workflow Develop
 
-- créer une branche feature/test et y faire un commit
-- créer une PR depuis feature/test vers develop
+![Exemple de workflow sur develop](/assets/workflow_development.png)
 
-Le workflow doit se déclencher automatiqueemnt suite à la création de la PR:
+### Exemple de Workflow Main
 
-- les tests sont lancés
-- s'ils réussisent le fake build est lancé
-- s'il réussit le deploiement fictif sur develop est lancé
-- enfin la pr est mergé automatiquement sur develop
-- et une novuelle pr est crée de develop vers main
+![Exemple de workflow sur main](/assets/exemple_workflow_production.png)
 
-On review et merge cette PR et alors le déploiement en production doit se déclencher
+### Exemple de Summary
 
-## résultats attendus
-
-Exemple de workflow sur develop:
-
-![Exemple de workflow sur develop](./assets/workflow_develop.png)
-
-Exemple de workflow sur main:
-
-![Exemple de workflow sur main](./assets/workflow_main.png)
-
-Exemple de summary:
-
-![Exemple de summary](./assets/summary.png)
+![Exemple de summary](/assets/exemple_summary.png)
