@@ -127,7 +127,9 @@ jobs:
     name: Deploy to development
     needs: [build]
     runs-on: ubuntu-latest
-    environment: develop
+    environment:
+      name: develop
+      url: ${{ vars.DEPLOY_URL }}
     concurrency:
       group: deploy-dev
       cancel-in-progress: true
@@ -171,7 +173,9 @@ jobs:
     name: Deploy to production
     needs: [build]
     runs-on: ubuntu-latest
-    environment: production
+    environment:
+      name: production
+      url: ${{ vars.DEPLOY_URL }}
     concurrency:
       group: deploy-prod
       cancel-in-progress: true
