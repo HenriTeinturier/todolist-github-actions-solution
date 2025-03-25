@@ -1,76 +1,96 @@
-# CI/CD Pipeline TodoList App
+# TodoList GitHub Actions Solution
 
-## Workflow Overview
+Ce repository est la solution complète de l'exercice de mise en place d'un workflow CI/CD avec GitHub Actions, basé sur le starter kit [todolist-github-action-starter](https://github.com/HenriTeinturier/todolist-github-action-starter).
 
-This CI/CD pipeline automates the testing, building, and deployment process of the TodoList application.
+## 🎯 Description
 
-### Pipeline Steps
+Cette solution implémente un workflow CI/CD complet pour une application Todo List React, démontrant les bonnes pratiques de :
 
-1. **Tests and Coverage** (`Test on Node 18` and `Test on Node lts/*`)
+- Intégration continue (CI)
+- Déploiement continu (CD)
+- Protection des branches
+- Gestion des environnements
+- Tests automatisés
 
-   - Runs unit tests
-   - Generates coverage reports
-   - Uploads coverage artifacts
+## 🔄 Workflow Implémenté
 
-2. **Lint** (`Lint code`)
+### Flow de Développement
 
-   - Checks code style and quality
+- Tests automatiques sur les PRs
+- Build automatique
+- Déploiement automatique vers l'environnement de développement
+- Merge automatique vers develop
+- Création automatique d'une PR vers main
 
-3. **Build** (`Build application`)
+### Flow de Production
 
-   - Builds the application
-   - Depends on successful tests and lint
+- Déploiement automatique vers l'environnement de production après merge sur main
+- Protection renforcée de la branche main
 
-4. **Development Deployment** (`Deploy to development`)
+## ⚙️ Configuration
 
-   - Deploys to development environment
-   - Triggers on feature/\* branches PRs to develop
-   - Auto-merges PR if successful
+### Environnements GitHub
 
-5. **Production Deployment** (`Deploy to production`)
-   - Deploys to production environment
-   - Triggers when PRs are merged into main
+| Environnement | Variables                                     | Secrets        |
+| ------------- | --------------------------------------------- | -------------- |
+| `develop`     | `DEPLOY_URL: https://dev.todoapp.exemple.com` | `DEPLOY_TOKEN` |
+| `production`  | `DEPLOY_URL: https://todoapp.exemple.com`     | `DEPLOY_TOKEN` |
 
-### Branch Protection Rules
+### Protection des Branches
 
-- `develop` branch requires:
+- `main` :
+  - Pull requests obligatoires
+  - Tests obligatoires
+  - 1 reviewer minimum
+- `develop` :
+  - Pull requests obligatoires
+  - Tests obligatoires
 
-  - Passing status checks
-  - Pull request review
-  - Up-to-date branch
+## 📋 Jobs Implémentés
 
-- `main` branch requires:
-  - Passing status checks
-  - Pull request review
-  - Up-to-date branch
-  - Environment deployment
+- `unit-tests` : Tests unitaires (multi-version Node)
+- `lint` : Vérification ESLint
+- `build` : Build de l'application
+- `deploy-dev` : Déploiement en développement
+- `auto-merge-and-create-release-pr` : Gestion automatique des PRs
+- `deploy-prod` : Déploiement en production
 
-### How to Re-run Checks
+## 🖼️ Exemples de Workflow
 
-1. Go to the Pull Request page
-2. Click on "Conversation" tab
-3. Find the "Checks" section (usually at the bottom of the PR description)
-4. Click on the "Details" link next to any check
-5. In the top right corner, click on the three dots (⋮)
-6. Select "Re-run all jobs"
+### Workflow Develop
 
-Alternatively, you can:
+![Exemple de workflow sur develop](/assets/workflow_development.png)
 
-1. Go to the "Actions" tab in your repository
-2. Find the workflow run you want to re-run
-3. Click the "Re-run all jobs" button
+### Workflow Main
 
-### Environment Configuration
+![Exemple de workflow sur main](/assets/exemple_workflow_production.png)
 
-- **Development Environment**
+## 🚀 Installation et Utilisation
 
-  - Target branches: `develop`, `feature/**`
-  - Required variables:
-    - `DEPLOY_URL`: Development deployment URL
-    - `DEPLOY_TOKEN`: Development deployment token
+```bash
+# Cloner le repository
+git clone https://github.com/votre-username/todolist-github-actions-solution.git
 
-- **Production Environment**
-  - Target branch: `main`
-  - Required variables:
-    - `DEPLOY_URL`: Production deployment URL
-    - `DEPLOY_TOKEN`: Production deployment token
+# Installer les dépendances
+npm install
+
+# Lancer l'application
+npm run dev
+```
+
+## 📚 Documentation
+
+Pour comprendre la mise en place de ce workflow, consultez :
+
+- [Notice détaillée](notice.md)
+- [Documentation GitHub Actions](https://docs.github.com/fr/actions)
+- [Guide des Environnements GitHub](https://docs.github.com/fr/actions/deployment/targeting-different-environments/using-environments-for-deployment)
+
+## 🔗 Liens Utiles
+
+- [Repository de départ](https://github.com/HenriTeinturier/todolist-github-action-starter)
+- [GitHub CLI dans les workflows](https://docs.github.com/fr/actions/writing-workflows/choosing-what-your-workflow-does/using-github-cli-in-workflows)
+
+## 📄 Licence
+
+MIT
