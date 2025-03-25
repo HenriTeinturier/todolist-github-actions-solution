@@ -156,7 +156,9 @@ jobs:
     needs: [deploy-dev]
     runs-on: ubuntu-latest
     permissions:
+      # On veut que le workflow puisse merger les PR
       pull-requests: write
+      # On veut que le workflow puisse créer des PR
       contents: write
 
     steps:
@@ -166,14 +168,26 @@ jobs:
       - name: Auto-merge PR
         run: |
           echo "🔄 Auto-merging PR to develop"
+          # On veut que le PR soit mergé automatiquement
+          # gh pr merge : Commande de base pour merger une PR
+          # --auto : Active le merge automatique dès que toutes les conditions requises sont remplies (checks, reviews, etc.)
+          # "${{ github.event.pull_request.number }}" : Le numéro de la PR actuelle (récupéré du contexte de l'événement)
           gh pr merge --auto --merge "${{ github.event.pull_request.number }}"
         env:
+          # La commande gh nécessite le GITHUB_TOKEN pour effectuer les actions
+          # On doit lui passer la variable d'environnement GH_TOKEN
+          # et on doit lui insérer le GITHUB_TOKEN
+          # Ce Token est généré automatiquement par GitHub Action au lancement du workflow
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create PR to main
         run: |
           echo "📝 Creating PR to main"
-          gh pr create --base main --head develop --title "Release to production" --body "Automated PR from develop to main"
+          # gh pr create : Commande de base pour créer une PR
+          # --base main : La branche de destination (main)
+          # --head develop : La branche source (develop)
+          # --title "Release to production" : Le titre de la PR
+          gh pr create --base main --head develop --title "Release to production"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
