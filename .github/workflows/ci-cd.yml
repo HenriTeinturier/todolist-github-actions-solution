@@ -155,6 +155,8 @@ jobs:
     name: Manage Pull Requests
     needs: [deploy-dev]
     runs-on: ubuntu-latest
+    # on veut que l'environnement develop soit en echec si une des steps de ce job echoue
+    environment: develop
     permissions:
       # On veut que le workflow puisse merger les PR
       pull-requests: write
@@ -187,9 +189,21 @@ jobs:
           # --base main : La branche de destination (main)
           # --head develop : La branche source (develop)
           # --title "Release to production" : Le titre de la PR
-          gh pr create --base main --head develop --title "Release to production"
+          # --body "Automated PR from develop to main" : Le message de la PR (obligatoire)
+          gh pr create --base main --head develop --title "Release to production" --body "Automated PR from develop to main"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "## Merge Operations" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Successfully managed pull requests" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Merge Operations" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Failed to manage pull requests" >> $GITHUB_STEP_SUMMARY
+          fi
 
   deploy-prod:
     name: Deploy to production
